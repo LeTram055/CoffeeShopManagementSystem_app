@@ -30,7 +30,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.13.4
+  provider: ^6.1.2
+  intl: ^0.19.0
+  flutter_dotenv: ^5.1.0
 
+  flutter_pdfview: ^1.2.7
+  dio: ^5.0.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -39,13 +45,18 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  flutter_launcher_icons: "^0.14.1"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -57,6 +68,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - .env
+    - assets/images/logo.png
+    
 
   # To add assets to your application, add an assets section, like this:
   # assets:
