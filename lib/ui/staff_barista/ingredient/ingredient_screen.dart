@@ -122,6 +122,19 @@ class _IngredientScreenState extends State<IngredientScreen> {
                       return;
                     }
 
+                    // Kiểm tra nếu giảm quá mức số lượng hiện tại
+                    if (adjustmentType == 'decrease' &&
+                        enteredQuantity > currentQuantity) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'Không thể giảm số lượng nhiều hơn số lượng hiện có'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
                     double finalQuantity = (adjustmentType == 'increase')
                         ? enteredQuantity
                         : -enteredQuantity;
