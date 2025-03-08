@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       primary: const Color(0xFF0049ab),
       onPrimary: Colors.white,
       onSecondary: Colors.black,
-      shadow: const Color.fromARGB(255, 25, 119, 252).withOpacity(0.5),
+      shadow: const Color.fromARGB(255, 12, 98, 219).withOpacity(0.9),
     );
 
     final themeData = ThemeData(
@@ -79,6 +79,7 @@ class MyApp extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(create: (context) => MenuManager()),
           ChangeNotifierProvider(create: (context) => IngredientManager()),
+          ChangeNotifierProvider(create: (context) => OrderManager()),
         ],
         child: MaterialApp(
           title: 'Hope Cafe',
@@ -134,7 +135,7 @@ class _HomeState extends State<Home> {
   int _selectedIndex = 0; // Index của mục bottombar đã chọn
 
   final List<Widget> _pages = [
-    const OrderScreen(),
+    OrderScreen(),
     MenuScreen(),
     IngredientScreen(),
   ]; // Danh sách các trang

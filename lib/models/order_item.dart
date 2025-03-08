@@ -1,14 +1,18 @@
+import 'menu_item.dart';
+
 class OrderItem {
   final int orderId;
   final int itemId;
   final int quantity;
   final String? note;
+  final MenuItem item;
 
   OrderItem({
     required this.orderId,
     required this.itemId,
     required this.quantity,
     this.note,
+    required this.item,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -16,7 +20,8 @@ class OrderItem {
       orderId: json['order_id'],
       itemId: json['item_id'],
       quantity: json['quantity'],
-      note: json['note'],
+      note: json['note'] as String?,
+      item: MenuItem.fromJson(json['item']),
     );
   }
 
@@ -26,6 +31,7 @@ class OrderItem {
       'item_id': itemId,
       'quantity': quantity,
       'note': note,
+      'item': item.toJson(),
     };
   }
 }
