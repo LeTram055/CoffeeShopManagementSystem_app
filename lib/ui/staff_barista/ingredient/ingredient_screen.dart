@@ -187,9 +187,19 @@ class _IngredientScreenState extends State<IngredientScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Danh sách nguyên liệu',
-          style: textTheme.titleLarge!.copyWith(color: colorScheme.onPrimary),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo_nbg.png',
+              height: 60, // Giảm kích thước ảnh nếu cần
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Nguyên liệu',
+              style: TextStyle(fontFamily: 'Prata'),
+            ),
+          ],
         ),
         backgroundColor: colorScheme.primary,
         centerTitle: true,
@@ -247,8 +257,8 @@ class _IngredientScreenState extends State<IngredientScreen> {
 
                             return Card(
                               color: colorScheme.surface,
-                              elevation: 3,
                               shadowColor: colorScheme.shadow,
+                              elevation: 4,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
