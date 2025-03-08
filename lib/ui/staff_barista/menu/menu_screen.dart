@@ -49,8 +49,20 @@ class _MenuScreenState extends State<MenuScreen> {
       length: categories.length + 1,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Danh sách món',
-              style: TextStyle(color: colorScheme.onPrimary)),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/logo_nbg.png',
+                height: 60, // Giảm kích thước ảnh nếu cần
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Danh sách món',
+                style: TextStyle(fontFamily: 'Prata'),
+              ),
+            ],
+          ),
           centerTitle: true,
           backgroundColor: colorScheme.primary,
           bottom: TabBar(
@@ -59,6 +71,7 @@ class _MenuScreenState extends State<MenuScreen> {
             unselectedLabelColor: colorScheme.surfaceTint,
             indicatorColor: colorScheme.secondary,
             labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+            labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             tabs: [
               const Tab(text: 'Tất cả'),
               ...categories.map((c) => Tab(text: c.name)),
@@ -119,6 +132,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             return Card(
                               color: colorScheme.surface,
                               shadowColor: colorScheme.shadow,
+                              elevation: 4,
                               margin: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
                               child: Padding(

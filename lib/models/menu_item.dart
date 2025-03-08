@@ -32,9 +32,11 @@ class MenuItem {
           : double.tryParse(json['price'].toString()) ?? 0.0,
       isAvailable: json['is_available'] == 1,
       categoryId: json['category_id'],
-      ingredients: (json['ingredients'] as List)
-          .map((ingredientJson) => MenuIngredient.fromJson(ingredientJson))
-          .toList(),
+      ingredients: (json['ingredients'] != null && json['ingredients'] is List)
+          ? (json['ingredients'] as List)
+              .map((ingredientJson) => MenuIngredient.fromJson(ingredientJson))
+              .toList()
+          : [],
     );
   }
 

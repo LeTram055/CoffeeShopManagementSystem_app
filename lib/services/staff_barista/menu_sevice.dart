@@ -14,7 +14,6 @@ class MenuService {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        print("Response body: ${response.body}");
         final Map<String, dynamic> responseData = json.decode(response.body);
 
         if (responseData.containsKey('data') && responseData['data'] is List) {
@@ -25,7 +24,6 @@ class MenuService {
         throw Exception('Không thể tải danh sách sản phẩm');
       }
     } catch (error) {
-      print("Lỗi khi tải menu: $error");
       throw Exception('Lỗi kết nối đến server');
     }
     throw Exception('Không thể tải danh sách sản phẩm');
@@ -45,7 +43,6 @@ class MenuService {
       }
       throw Exception('Không thể tải danh mục');
     } catch (error) {
-      print("Lỗi khi tải danh mục: $error");
       throw Exception('Lỗi kết nối đến server');
     }
   }
@@ -54,18 +51,11 @@ class MenuService {
     final url = Uri.parse('$baseUrl/menu-items/$itemId/toggle');
 
     try {
-      final response = await http.put(
+      await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
       );
-
-      if (response.statusCode == 200) {
-        print("Cập nhật trạng thái thành công");
-      } else {
-        throw Exception("Không thể cập nhật trạng thái");
-      }
     } catch (error) {
-      print("Lỗi khi cập nhật trạng thái: $error");
       throw Exception("Lỗi kết nối đến server");
     }
   }
