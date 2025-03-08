@@ -71,7 +71,11 @@ flutter:
   assets:
     - .env
     - assets/images/logo.png
-    
+    - assets/images/logo_nbg.png
+  fonts:
+    - family: Prata
+      fonts:
+        - asset: assets/fonts/Prata-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
