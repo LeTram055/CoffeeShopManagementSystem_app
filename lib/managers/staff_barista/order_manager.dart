@@ -27,9 +27,9 @@ class OrderManager with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> completeOrder(int orderId) async {
+  Future<void> completeOrder(int orderId, int employeeId) async {
     try {
-      await _orderService.completeOrder(orderId, 3);
+      await _orderService.completeOrder(orderId, employeeId);
       fetchOrders();
     } catch (e) {
       print("Lỗi khi cập nhật đơn: $e");

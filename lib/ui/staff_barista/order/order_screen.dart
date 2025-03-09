@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../managers/staff_barista/order_manager.dart';
+import '../../../managers/auth_manager.dart';
 import '../../../models/order.dart';
 import '../../../models/order_item.dart';
 
@@ -222,7 +223,11 @@ class _OrderScreenState extends State<OrderScreen> {
   void _completeOrder(BuildContext context, Order order) async {
     try {
       final orderManager = Provider.of<OrderManager>(context, listen: false);
-      await orderManager.completeOrder(order.orderId);
+      final employeeId = Provider.of<AuthManager>(context, listen: false)
+          .currentUser!
+          .employeeId;
+      await orderManager.completeOrder(order.orderId, employeeId);
+
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
