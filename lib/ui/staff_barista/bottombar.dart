@@ -23,8 +23,12 @@ class BottomBar extends StatelessWidget {
           label: 'Danh sách món',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.list),
+          icon: Icon(Icons.article_outlined),
           label: 'Nguyên liệu',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'Cá nhân',
         ),
       ],
       currentIndex: selectedIndex,

@@ -1,5 +1,7 @@
+import 'dart:convert';
+
 class Employee {
-  final int id;
+  final int employeeId;
   final String name;
   final String username;
   final String password;
@@ -11,7 +13,7 @@ class Employee {
   final String startDate;
 
   Employee({
-    required this.id,
+    required this.employeeId,
     required this.name,
     required this.username,
     required this.password,
@@ -25,30 +27,31 @@ class Employee {
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      id: json['employee_id'],
-      name: json['name'],
-      username: json['username'],
-      password: json['password'],
-      role: json['role'],
-      status: json['status'],
-      phoneNumber: json['phone_number'],
-      email: json['email'],
-      address: json['address'],
-      startDate: json['start_date'],
+      employeeId: json['employee_id'] ?? 0,
+      name: json['name'] ?? '',
+      username: json['username'] ?? '',
+      password: json['password'] ?? '',
+      role: json['role'] ?? '',
+      status: json['status'] ?? '',
+      phoneNumber: json['phone_number'] ?? '',
+      email: json['email'] ?? '',
+      address: json['address'] ?? '',
+      startDate: json['start_date'] ?? '',
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'username': username,
-      'password': password,
-      'role': role,
-      'status': status,
-      'phone_number': phoneNumber,
-      'email': email,
-      'address': address,
-      'start_date': startDate,
-    };
+  String toJson() {
+    return jsonEncode({
+      "employee_id": employeeId,
+      "name": name,
+      "username": username,
+      "password": password,
+      "role": role,
+      "status": status,
+      "phone_number": phoneNumber,
+      "email": email,
+      "address": address,
+      "start_date": startDate,
+    });
   }
 }
