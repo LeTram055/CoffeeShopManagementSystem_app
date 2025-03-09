@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../../managers/staff_barista/ingredient_manager.dart';
+import '../../../managers/auth_manager.dart';
 
 class IngredientScreen extends StatefulWidget {
   static const routeName = '/ingredients';
@@ -33,8 +34,10 @@ class _IngredientScreenState extends State<IngredientScreen> {
     final TextEditingController quantityController =
         TextEditingController(text: '');
     final TextEditingController reasonController = TextEditingController();
+    String adjustmentType = 'increase';
 
-    String adjustmentType = 'increase'; // Mặc định là tăng
+    String? quantityError;
+    String? reasonError;
 
     showDialog(
       context: context,
@@ -42,7 +45,11 @@ class _IngredientScreenState extends State<IngredientScreen> {
         return StatefulBuilder(
           builder: (ctx, setState) {
             return AlertDialog(
-              title: const Text('Cập nhật số lượng'),
+              title: const Text(
+                'Cập nhật số lượng',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Color(0xFF0049ab)),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -51,8 +58,10 @@ class _IngredientScreenState extends State<IngredientScreen> {
                     TextField(
                       controller: quantityController,
                       keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Nhập số lượng'),
+                      decoration: InputDecoration(
+                        labelText: 'Nhập số lượng',
+                        errorText: quantityError,
+                      ),
                     ),
                     const SizedBox(height: 10),
 
@@ -91,8 +100,10 @@ class _IngredientScreenState extends State<IngredientScreen> {
                     // Nhập lý do
                     TextField(
                       controller: reasonController,
-                      decoration:
-                          const InputDecoration(labelText: 'Lý do điều chỉnh'),
+                      decoration: InputDecoration(
+                        labelText: 'Lý do điều chỉnh',
+                        errorText: reasonError,
+                      ),
                     ),
                   ],
                 ),
@@ -104,34 +115,33 @@ class _IngredientScreenState extends State<IngredientScreen> {
                 ),
                 TextButton(
                   onPressed: () async {
+                    setState(() {
+                      quantityError = null;
+                      reasonError = null;
+                    });
+
                     final enteredQuantity =
                         double.tryParse(quantityController.text);
                     if (enteredQuantity == null || enteredQuantity <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Vui lòng nhập số lượng hợp lệ')),
-                      );
+                      setState(() {
+                        quantityError = 'Vui lòng nhập số lượng hợp lệ';
+                      });
                       return;
                     }
 
                     final reason = reasonController.text.trim();
                     if (reason.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Vui lòng nhập lý do')),
-                      );
+                      setState(() {
+                        reasonError = 'Vui lòng nhập lý do';
+                      });
                       return;
                     }
 
-                    // Kiểm tra nếu giảm quá mức số lượng hiện tại
                     if (adjustmentType == 'decrease' &&
                         enteredQuantity > currentQuantity) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Không thể giảm số lượng nhiều hơn số lượng hiện có'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      setState(() {
+                        quantityError = 'Không thể giảm quá số lượng hiện có';
+                      });
                       return;
                     }
 
@@ -139,11 +149,16 @@ class _IngredientScreenState extends State<IngredientScreen> {
                         ? enteredQuantity
                         : -enteredQuantity;
 
+                    final employeeId =
+                        Provider.of<AuthManager>(context, listen: false)
+                            .currentUser!
+                            .employeeId;
+
                     try {
                       await Provider.of<IngredientManager>(context,
                               listen: false)
                           .updateQuantity(
-                              ingredientId, finalQuantity, 3, reason);
+                              ingredientId, finalQuantity, employeeId, reason);
 
                       // Hiển thị thông báo cập nhật thành công
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -157,16 +172,12 @@ class _IngredientScreenState extends State<IngredientScreen> {
                       await Provider.of<IngredientManager>(context,
                               listen: false)
                           .loadIngredients();
+                      Navigator.of(ctx).pop();
                     } catch (error) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Có lỗi xảy ra: $error'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      setState(() {
+                        quantityError = 'Có lỗi xảy ra: $error';
+                      });
                     }
-
-                    Navigator.of(ctx).pop();
                   },
                   child: const Text('Lưu'),
                 ),
