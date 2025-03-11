@@ -1,4 +1,5 @@
 import 'order_item.dart';
+import 'customer.dart';
 
 class Order {
   final int orderId;
@@ -11,6 +12,7 @@ class Order {
   final double totalPrice;
   final DateTime createdAt;
   final List<OrderItem> items;
+  final Customer? customer;
 
   Order({
     required this.orderId,
@@ -22,6 +24,7 @@ class Order {
     required this.totalPrice,
     required this.createdAt,
     required this.items,
+    this.customer,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -39,6 +42,7 @@ class Order {
       items: (json['order_items'] as List)
           .map((itemJson) => OrderItem.fromJson(itemJson))
           .toList(),
+      customer: Customer.fromJson(json['customer']),
     );
   }
 
@@ -53,6 +57,7 @@ class Order {
       'total_price': totalPrice,
       'created_at': createdAt.toIso8601String(),
       'items': items.map((item) => item.toJson()).toList(),
+      'customer': customer?.toJson(),
     };
   }
 }

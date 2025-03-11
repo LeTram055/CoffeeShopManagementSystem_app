@@ -24,8 +24,12 @@ class Promotion {
       promotionId: json['promotion_id'],
       name: json['name'],
       discountType: json['discount_type'],
-      discountValue: (json['discount_value'] as num).toDouble(),
-      minOrderValue: (json['min_order_value'] as num).toDouble(),
+      discountValue: (json['discount_value'] is num)
+          ? (json['discount_value'] as num).toDouble()
+          : double.tryParse(json['discount_value'].toString()) ?? 0.0,
+      minOrderValue: (json['min_order_value'] is num)
+          ? (json['min_order_value'] as num).toDouble()
+          : double.tryParse(json['min_order_value'].toString()) ?? 0.0,
       startDate: DateTime.parse(json['start_date']),
       endDate: DateTime.parse(json['end_date']),
       isActive: json['is_active'] == 1,
