@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'ui/staff_barista/screens.dart';
 import 'ui/auth/screens.dart';
+import 'ui/staff_serve/screens.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -82,6 +83,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => IngredientManager()),
         ChangeNotifierProvider(create: (context) => OrderManager()),
         ChangeNotifierProvider(create: (context) => AuthManager()),
+        ChangeNotifierProvider(create: (context) => OrderServeManager()),
       ],
       child: Consumer<AuthManager>(builder: (ctx, authManager, child) {
         return MaterialApp(
@@ -144,7 +146,7 @@ class _HomeBaristaState extends State<HomeBarista> {
 }
 
 class HomeServe extends StatefulWidget {
-  static const routeName = '/home';
+  static const routeName = '/home-serve';
   const HomeServe({super.key});
 
   @override
@@ -154,7 +156,11 @@ class HomeServe extends StatefulWidget {
 class _HomeServeState extends State<HomeServe> {
   int _selectedIndex = 0; // Index của mục bottombar đã chọn
 
-  final List<Widget> _pages = []; // Danh sách các trang
+  final List<Widget> _pages = [
+    TableScreen(),
+    Container(),
+    ProfileScreen(),
+  ]; // Danh sách các trang
 
   void _onItemTapped(int index) {
     setState(() {
@@ -166,7 +172,7 @@ class _HomeServeState extends State<HomeServe> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex], // Hiển thị trang dựa trên chỉ mục đã chọn
-      bottomNavigationBar: BottomBar(
+      bottomNavigationBar: BottomBarStaffSerrve(
         // Sử dụng BottomBar
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
