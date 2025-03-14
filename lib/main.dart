@@ -84,6 +84,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => OrderManager()),
         ChangeNotifierProvider(create: (context) => AuthManager()),
         ChangeNotifierProvider(create: (context) => OrderServeManager()),
+        ChangeNotifierProvider(create: (context) => PaymentManager()),
       ],
       child: Consumer<AuthManager>(builder: (ctx, authManager, child) {
         return MaterialApp(
@@ -158,7 +159,7 @@ class _HomeServeState extends State<HomeServe> {
 
   final List<Widget> _pages = [
     TableScreen(),
-    Container(),
+    PaidOrdersScreen(),
     ProfileScreen(),
   ]; // Danh sách các trang
 

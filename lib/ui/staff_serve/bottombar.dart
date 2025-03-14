@@ -15,12 +15,12 @@ class BottomBarStaffSerrve extends StatelessWidget {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
-          icon: Icon(Icons.fastfood_rounded),
-          label: 'Danh sách món',
+          icon: Icon(Icons.list),
+          label: 'Đặt hàng',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.list_rounded),
-          label: 'Đơn hàng',
+          icon: Icon(Icons.receipt_long),
+          label: 'Hóa đơn',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person),
