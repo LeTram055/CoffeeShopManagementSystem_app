@@ -97,12 +97,13 @@ class OrderServeManager extends ChangeNotifier {
   }
 
   Future<Order?> getOrderByTableId(int tableId) async {
-    _isLoading = true;
+    //_isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       final order = await _orderService.fetchOrderByTableId(tableId);
+
       return order;
     } catch (error) {
       _errorMessage = error.toString();

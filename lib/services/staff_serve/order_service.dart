@@ -132,6 +132,7 @@ class OrderServeService {
     } catch (e) {
       throw Exception('Lỗi: $e');
     }
+    return null;
   }
 
   Future<void> updateOrder(Order order) async {

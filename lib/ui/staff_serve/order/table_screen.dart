@@ -68,10 +68,10 @@ class _TableScreenState extends State<TableScreen>
             labelStyle:
                 const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             tabs: const [
+              Tab(text: "Tất cả"),
               Tab(text: "Trống"),
               Tab(text: "Đang sử dụng"),
               Tab(text: "Đang sửa"),
-              Tab(text: "Tất cả"),
             ],
           ),
         ),
@@ -82,9 +82,13 @@ class _TableScreenState extends State<TableScreen>
             Expanded(
               child: Consumer<OrderServeManager>(
                 builder: (context, tableManager, child) {
+                  if (tableManager.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
                   return TabBarView(
                     controller: _tabController,
                     children: [
+                      _buildTableGrid(_filterTables(tableManager.tables)),
                       _buildTableGrid(_filterTables(tableManager.tables
                           .where((table) => table.status.name == "Trống")
                           .toList())),
@@ -94,7 +98,6 @@ class _TableScreenState extends State<TableScreen>
                       _buildTableGrid(_filterTables(tableManager.tables
                           .where((table) => table.status.name == "Đang sửa")
                           .toList())),
-                      _buildTableGrid(_filterTables(tableManager.tables)),
                     ],
                   );
                 },
@@ -198,9 +201,23 @@ class _TableScreenState extends State<TableScreen>
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: Text(
-              "Bàn ${table.tableNumber}",
-              style: const TextStyle(fontSize: 18, color: Colors.white),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Bàn ${table.tableNumber}",
+                  style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "${table.capacity} ghế",
+                  style: const TextStyle(fontSize: 14, color: Colors.white),
+                ),
+              ],
             ),
           ),
         );
