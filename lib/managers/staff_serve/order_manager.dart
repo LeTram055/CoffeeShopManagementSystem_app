@@ -24,11 +24,13 @@ class OrderServeManager extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   Future<void> loadTables() async {
+    print("🔄 Đang tải danh sách bàn...");
     _isLoading = true;
     notifyListeners();
 
     try {
       _tables = await _orderService.fetchTables();
+      print("✅ Danh sách bàn đã cập nhật: ${_tables.length}");
     } catch (error) {
       print("Lỗi khi tải bàn: $error");
     }
@@ -183,6 +185,7 @@ class OrderServeManager extends ChangeNotifier {
       await _orderService.savePayment(payment);
     } catch (error) {
       _errorMessage = error.toString();
+      print("Lỗi khi lưu thanh toán: $_errorMessage");
     }
 
     _isLoading = false;

@@ -1,3 +1,4 @@
+import 'package:coffeeshop/ui/staff_serve/order/table_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -674,8 +675,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     );
 
                     if (result == true) {
-                      Navigator.pop(context,
-                          true); // Trả kết quả về cho màn hình trước đó
+                      Navigator.pushNamed(context,
+                          TableScreen.routeName); // Trả kết quả về TableScreen
                     }
                   },
                   icon: const Icon(Icons.payment, color: Colors.white),

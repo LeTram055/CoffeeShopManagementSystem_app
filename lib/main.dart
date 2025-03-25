@@ -6,15 +6,21 @@ import 'package:provider/provider.dart';
 import 'ui/staff_barista/screens.dart';
 import 'ui/auth/screens.dart';
 import 'ui/staff_serve/screens.dart';
+import 'services/socket_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await dotenv.load();
 
   // Khóa chế độ xoay màn hình
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp, // Chỉ cho phép dọc đứng
   ]);
+
+  SocketService socketService = SocketService();
+  socketService.connect();
+  socketService.sendMessage('Hello from Flutter!');
 
   runApp(const MyApp());
 }
@@ -102,6 +108,7 @@ class MyApp extends StatelessWidget {
             IngredientScreen.routeName: (context) => IngredientScreen(),
             ProfileScreen.routeName: (context) => ProfileScreen(),
             LoginScreen.routeName: (context) => LoginScreen(),
+            TableScreen.routeName: (context) => TableScreen(),
           },
         );
       }),

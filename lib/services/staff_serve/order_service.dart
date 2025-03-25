@@ -205,6 +205,8 @@ class OrderServeService {
   Future<void> savePayment(Payment payment) async {
     final url = Uri.parse('$baseUrl/payment/create');
 
+    print(jsonEncode(payment.toJson()));
+
     try {
       final response = await http.post(
         url,

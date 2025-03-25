@@ -7,6 +7,7 @@ import '../../../models/order.dart';
 import 'order_details_screen.dart';
 
 class TableScreen extends StatefulWidget {
+  static const routeName = 'staff-serve/table';
   @override
   _TableScreenState createState() => _TableScreenState();
 }
@@ -170,28 +171,24 @@ class _TableScreenState extends State<TableScreen>
         return GestureDetector(
           onTap: () async {
             if (statusName == "Trống") {
-              final result = await Navigator.push(
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => OrderServeScreen(table: table)),
               );
-              if (result == true) {
-                Provider.of<OrderServeManager>(context, listen: false)
-                    .loadTables();
-              }
+              // if (result == true) {
+              //   print("🔄 Cập nhật danh sách bàn...");
+              //   Provider.of<OrderServeManager>(context, listen: false)
+              //       .loadTables();
+              // }
             } else if (statusName == "Đang sử dụng") {
               final order = await _fetchOrderForTable(context, table.tableId);
               if (order != null) {
-                final result = await Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => OrderDetailsScreen(order: order)),
                 );
-
-                if (result == true) {
-                  Provider.of<OrderServeManager>(context, listen: false)
-                      .loadTables();
-                }
               }
             }
           },

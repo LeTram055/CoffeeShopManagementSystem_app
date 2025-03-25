@@ -51,13 +51,13 @@ class Payment {
       'payment_id': paymentId,
       'order_id': orderId,
       'employee_id': employeeId,
-      'promotion_id': promotionId,
+      'promotion_id': promotionId ?? 0,
       'discount_amount': discountAmount,
       'final_price': finalPrice,
       'payment_method': paymentMethod,
       'amount_received': amountReceived,
       'payment_time': paymentTime.toIso8601String(),
-      'order': order!.toJson(),
+      'order': order?.toJson(),
     };
   }
 }

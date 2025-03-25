@@ -31,13 +31,18 @@ class _PaymentModalState extends State<PaymentModal> {
   @override
   void initState() {
     super.initState();
-    fetchPromotions();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchPromotions();
+    });
     calculateFinalPrice();
   }
 
   void fetchPromotions() async {
     await Provider.of<OrderServeManager>(context, listen: false)
         .loadPromotions(widget.order.orderId);
+
+    if (!mounted) return;
+
     setState(() {
       promotions =
           Provider.of<OrderServeManager>(context, listen: false).promotions;
@@ -81,15 +86,21 @@ class _PaymentModalState extends State<PaymentModal> {
       return;
     }
 
-    final employeeId = Provider.of<AuthManager>(context, listen: false)
-        .currentUser!
-        .employeeId;
+    final currentUser =
+        Provider.of<AuthManager>(context, listen: false).currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Người dùng không hợp lệ!"),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
 
     final payment = Payment(
       paymentId: 0, // Backend sẽ tự tạo ID
       orderId: widget.order.orderId,
-      employeeId: employeeId,
-      promotionId: selectedPromotion?.promotionId,
+      employeeId: currentUser.employeeId,
+      promotionId: selectedPromotion?.promotionId ?? 0,
       discountAmount: discount,
       finalPrice: finalPrice,
       paymentMethod: selectedMethod,
@@ -100,13 +111,14 @@ class _PaymentModalState extends State<PaymentModal> {
     try {
       await Provider.of<OrderServeManager>(context, listen: false)
           .savePayment(payment);
-
+      if (!mounted) return; // Check if the widget is still mounted
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Thanh toán thành công!"),
         backgroundColor: Colors.green,
       ));
     } catch (error) {
+      if (!mounted) return; // Check if the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Lỗi khi lưu thanh toán!"),
         backgroundColor: Colors.red,
@@ -153,15 +165,18 @@ class _PaymentModalState extends State<PaymentModal> {
             decoration: const InputDecoration(border: OutlineInputBorder()),
             isExpanded: true,
             hint: const Text("Chọn khuyến mãi"),
-            items: promotions.map((promo) {
-              return DropdownMenuItem(
-                value: promo,
-                child: Text(
-                  "${promo.name} (${promo.discountType == 'percentage' ? '${promo.discountValue}%' : '${NumberFormat("#,###", "vi_VN").format(promo.discountValue)}đ'})",
-                ),
-              );
-            }).toList(),
-            onChanged: (value) => applyPromotion(value),
+            items: promotions.isNotEmpty
+                ? promotions.map((promo) {
+                    return DropdownMenuItem(
+                      value: promo,
+                      child: Text(
+                        "${promo.name} (${promo.discountType == 'percentage' ? '${promo.discountValue}%' : '${NumberFormat("#,###", "vi_VN").format(promo.discountValue)}đ'})",
+                      ),
+                    );
+                  }).toList()
+                : [],
+            onChanged:
+                promotions.isNotEmpty ? (value) => applyPromotion(value) : null,
           ),
           const SizedBox(height: 10),
 

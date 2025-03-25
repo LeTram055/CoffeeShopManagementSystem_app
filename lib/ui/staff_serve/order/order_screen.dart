@@ -1,3 +1,4 @@
+import 'package:coffeeshop/ui/staff_serve/order/table_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -363,7 +364,8 @@ class _OrderServeScreenState extends State<OrderServeScreen> {
       });
 
       // Quay về màn hình trước đó
-      Navigator.pop(context, true);
+      // Navigator.pop(context, true);
+      Navigator.pushNamed(context, TableScreen.routeName);
     } catch (error) {
       // Xử lý lỗi khi lưu đơn hàng
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
