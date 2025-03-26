@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import 'ui/staff_barista/screens.dart';
 import 'ui/auth/screens.dart';
@@ -20,7 +21,6 @@ void main() async {
 
   SocketService socketService = SocketService();
   socketService.connect();
-  socketService.sendMessage('Hello from Flutter!');
 
   runApp(const MyApp());
 }
@@ -83,35 +83,38 @@ class MyApp extends StatelessWidget {
       ),
     );
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => MenuManager()),
-        ChangeNotifierProvider(create: (context) => IngredientManager()),
-        ChangeNotifierProvider(create: (context) => OrderManager()),
-        ChangeNotifierProvider(create: (context) => AuthManager()),
-        ChangeNotifierProvider(create: (context) => OrderServeManager()),
-        ChangeNotifierProvider(create: (context) => PaymentManager()),
-      ],
-      child: Consumer<AuthManager>(builder: (ctx, authManager, child) {
-        return MaterialApp(
-          title: 'Hope Cafe',
-          theme: themeData,
-          debugShowCheckedModeBanner: false,
-          home: authManager.isAuth
-              ? (authManager.currentUser?.role == 'staff_barista'
-                  ? const HomeBarista()
-                  : const HomeServe())
-              : LoginScreen(),
-          routes: {
-            HomeBarista.routeName: (context) => const HomeBarista(),
-            MenuScreen.routeName: (context) => MenuScreen(),
-            IngredientScreen.routeName: (context) => IngredientScreen(),
-            ProfileScreen.routeName: (context) => ProfileScreen(),
-            LoginScreen.routeName: (context) => LoginScreen(),
-            TableScreen.routeName: (context) => TableScreen(),
-          },
-        );
-      }),
+    return OverlaySupport.global(
+      // Bọc ứng dụng để hỗ trợ overlay notification
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => MenuManager()),
+          ChangeNotifierProvider(create: (context) => IngredientManager()),
+          ChangeNotifierProvider(create: (context) => OrderManager()),
+          ChangeNotifierProvider(create: (context) => AuthManager()),
+          ChangeNotifierProvider(create: (context) => OrderServeManager()),
+          ChangeNotifierProvider(create: (context) => PaymentManager()),
+        ],
+        child: Consumer<AuthManager>(builder: (ctx, authManager, child) {
+          return MaterialApp(
+            title: 'Hope Cafe',
+            theme: themeData,
+            debugShowCheckedModeBanner: false,
+            home: authManager.isAuth
+                ? (authManager.currentUser?.role == 'staff_barista'
+                    ? const HomeBarista()
+                    : const HomeServe())
+                : LoginScreen(),
+            routes: {
+              HomeBarista.routeName: (context) => const HomeBarista(),
+              MenuScreen.routeName: (context) => MenuScreen(),
+              IngredientScreen.routeName: (context) => IngredientScreen(),
+              ProfileScreen.routeName: (context) => ProfileScreen(),
+              LoginScreen.routeName: (context) => LoginScreen(),
+              TableScreen.routeName: (context) => TableScreen(),
+            },
+          );
+        }),
+      ),
     );
   }
 }

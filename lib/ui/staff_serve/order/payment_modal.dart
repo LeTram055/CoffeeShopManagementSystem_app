@@ -79,6 +79,7 @@ class _PaymentModalState extends State<PaymentModal> {
 
   void completePayment() async {
     if (amountReceived < finalPrice) {
+      Navigator.pop(context, false);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Số tiền nhận không đủ!"),
         backgroundColor: Colors.red,
@@ -89,6 +90,7 @@ class _PaymentModalState extends State<PaymentModal> {
     final currentUser =
         Provider.of<AuthManager>(context, listen: false).currentUser;
     if (currentUser == null) {
+      Navigator.pop(context, false);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Người dùng không hợp lệ!"),
         backgroundColor: Colors.red,
@@ -118,7 +120,8 @@ class _PaymentModalState extends State<PaymentModal> {
         backgroundColor: Colors.green,
       ));
     } catch (error) {
-      if (!mounted) return; // Check if the widget is still mounted
+      if (!mounted) return;
+      Navigator.pop(context, false); // Check if the widget is still mounted
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Lỗi khi lưu thanh toán!"),
         backgroundColor: Colors.red,

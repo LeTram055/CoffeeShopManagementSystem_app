@@ -675,8 +675,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     );
 
                     if (result == true) {
-                      Navigator.pushNamed(context,
-                          TableScreen.routeName); // Trả kết quả về TableScreen
+                      Navigator.pop(context, true);
                     }
                   },
                   icon: const Icon(Icons.payment, color: Colors.white),

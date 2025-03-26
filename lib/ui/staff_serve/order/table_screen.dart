@@ -18,15 +18,29 @@ class _TableScreenState extends State<TableScreen>
   String _searchQuery = '';
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchTimer;
+  late Future<void> _fetchTablesFuture = Future.value();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-
-    Future.delayed(Duration.zero, () {
-      Provider.of<OrderServeManager>(context, listen: false).loadTables();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _fetchTablesFuture =
+            Provider.of<OrderServeManager>(context, listen: false).loadTables();
+      });
     });
+    // Future.delayed(Duration.zero, () {
+    //   Provider.of<OrderServeManager>(context, listen: false).loadTables();
+    // });
+  }
+
+  Future<void> _fetchTables() async {
+    try {
+      await Provider.of<OrderServeManager>(context, listen: false).loadTables();
+    } catch (e) {
+      print("Lỗi khi lấy danh sách bàn: $e");
+    }
   }
 
   @override
@@ -40,6 +54,7 @@ class _TableScreenState extends State<TableScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final tableManager = Provider.of<OrderServeManager>(context);
     return DefaultTabController(
       length: 4,
       child: Scaffold(
@@ -81,26 +96,36 @@ class _TableScreenState extends State<TableScreen>
             _buildSearchBar(),
             _buildStatusLegend(),
             Expanded(
-              child: Consumer<OrderServeManager>(
-                builder: (context, tableManager, child) {
-                  if (tableManager.isLoading) {
+              child: FutureBuilder(
+                future: _fetchTablesFuture,
+                builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else {
+                    final tables = tableManager.tables;
+
+                    if (tables.isEmpty) {
+                      return const Center(child: Text('No products found.'));
+                    }
+                    return TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildTableGrid(_filterTables(tables)),
+                        _buildTableGrid(_filterTables(tables
+                            .where((table) => table.status.name == "Trống")
+                            .toList())),
+                        _buildTableGrid(_filterTables(tables
+                            .where(
+                                (table) => table.status.name == "Đang sử dụng")
+                            .toList())),
+                        _buildTableGrid(_filterTables(tables
+                            .where((table) => table.status.name == "Đang sửa")
+                            .toList())),
+                      ],
+                    );
                   }
-                  return TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildTableGrid(_filterTables(tableManager.tables)),
-                      _buildTableGrid(_filterTables(tableManager.tables
-                          .where((table) => table.status.name == "Trống")
-                          .toList())),
-                      _buildTableGrid(_filterTables(tableManager.tables
-                          .where((table) => table.status.name == "Đang sử dụng")
-                          .toList())),
-                      _buildTableGrid(_filterTables(tableManager.tables
-                          .where((table) => table.status.name == "Đang sửa")
-                          .toList())),
-                    ],
-                  );
                 },
               ),
             ),
@@ -171,24 +196,29 @@ class _TableScreenState extends State<TableScreen>
         return GestureDetector(
           onTap: () async {
             if (statusName == "Trống") {
-              await Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => OrderServeScreen(table: table)),
               );
-              // if (result == true) {
-              //   print("🔄 Cập nhật danh sách bàn...");
-              //   Provider.of<OrderServeManager>(context, listen: false)
-              //       .loadTables();
-              // }
+              if (result == true) {
+                await Provider.of<OrderServeManager>(context, listen: false)
+                    .loadTables();
+                if (mounted) setState(() {});
+              }
             } else if (statusName == "Đang sử dụng") {
               final order = await _fetchOrderForTable(context, table.tableId);
               if (order != null) {
-                await Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => OrderDetailsScreen(order: order)),
                 );
+                if (result == true) {
+                  await Provider.of<OrderServeManager>(context, listen: false)
+                      .loadTables();
+                  if (mounted) setState(() {});
+                }
               }
             }
           },
