@@ -46,4 +46,51 @@ class AuthService {
       };
     }
   }
+
+  // Future<Map<String, dynamic>> getProfile(String username) async {
+  //   final response = await http.get(
+  //     Uri.parse('$baseUrl/profile'),
+  //     headers: {
+  //       'Authorization': 'Bearer $username',
+  //     },
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     return jsonDecode(response.body);
+  //   } else {
+  //     throw Exception('Failed to load profile');
+  //   }
+  // }
+
+  Future<List<dynamic>> getWorkSchedules(String username,
+      {int? month, int? year}) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/work-schedules?username=$username&month=$month&year=$year'),
+    );
+    return response.statusCode == 200
+        ? jsonDecode(response.body)
+        : throw Exception('Lỗi tải lịch làm việc');
+  }
+
+  Future<List<dynamic>> getBonusesPenalties(String username,
+      {int? month, int? year}) async {
+    final response = await http.get(
+      Uri.parse(
+          '$baseUrl/bonuses-penalties?username=$username&month=$month&year=$year'),
+    );
+    return response.statusCode == 200
+        ? jsonDecode(response.body)
+        : throw Exception('Lỗi tải thưởng/phạt');
+  }
+
+  Future<List<dynamic>> getSalaries(String username,
+      {int? month, int? year}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/salaries?username=$username&month=$month&year=$year'),
+    );
+    return response.statusCode == 200
+        ? jsonDecode(response.body)
+        : throw Exception('Lỗi tải lương');
+  }
 }

@@ -5,37 +5,35 @@ import '../../managers/auth_manager.dart';
 import '../../models/employee.dart';
 import 'change_password.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
   static const routeName = '/profile';
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late Future<void> _fetchData = Future.value();
+  int _selectedMonth = DateTime.now().month;
+  int _selectedYear = DateTime.now().year;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        final authManager = Provider.of<AuthManager>(context, listen: false);
+        _fetchData = authManager.fetchEmployeeData(
+            month: _selectedMonth, year: _selectedYear);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final authManager = Provider.of<AuthManager>(context);
     final Employee? employee = authManager.currentUser;
-
-    // Hàm chuyển đổi vai trò sang tiếng Việt
-    String getRole(String? role) {
-      switch (role) {
-        case "staff_serve":
-          return "Nhân viên phục vụ";
-        case "staff_barista":
-          return "Nhân viên pha chế";
-        default:
-          return "Không xác định";
-      }
-    }
-
-    // Hàm định dạng ngày
-    String formatDate(String? date) {
-      if (date == null) return "Không có dữ liệu";
-      try {
-        final parsedDate = DateTime.parse(date);
-        return DateFormat('dd/MM/yyyy').format(parsedDate);
-      } catch (e) {
-        return "Không hợp lệ";
-      }
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +42,7 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Image.asset(
               'assets/images/logo_nbg.png',
-              height: 60, // Giảm kích thước ảnh nếu cần
+              height: 60,
             ),
             const SizedBox(width: 8),
             const Text(
@@ -55,77 +53,191 @@ class ProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: FutureBuilder<void>(
+        future: _fetchData,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Lỗi: ${snapshot.error}'));
+          } else {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileCard(employee),
+                  const SizedBox(height: 20),
+                  _buildFilterSection(),
+                  const SizedBox(height: 20),
+                  _buildSection(
+                      'Lịch làm việc',
+                      authManager.workSchedules,
+                      (schedule) =>
+                          'Ca: ${schedule['shift']['name']} (${schedule['shift']['start_time']} - ${schedule['shift']['end_time']})\nNgày: ${_formatDate(schedule['work_date'])}\nTrạng thái: ${_getStatus(schedule['status'])}'),
+                  const SizedBox(height: 20),
+                  _buildSection(
+                      'Thưởng/Phạt',
+                      authManager.bonusesPenalties,
+                      (bonusPenalty) =>
+                          'Lí do: ${bonusPenalty['reason']}\nSố tiền: ${_formatCurrency(bonusPenalty['amount'])}\nNgày: ${_formatDate(bonusPenalty['date'])}'),
+                  const SizedBox(height: 20),
+                  _buildSection(
+                      'Lương',
+                      authManager.salaries,
+                      (salary) =>
+                          'Tháng: ${salary['month']}\nNăm: ${salary['year']}\nTổng: ${_formatCurrency(salary['total_salary'])}\nThưởng/Phạt: ${_formatCurrency(salary['total_bonus_penalty'])}\nLương cuối: ${_formatCurrency(salary['final_salary'])}\nTrạng thái: ${_getStatus(salary['status'])}'),
+                  const SizedBox(height: 20),
+                  _buildActionButtons(context),
+                ],
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          DropdownButton<int>(
+            value: _selectedMonth,
+            onChanged: (value) {
+              setState(() {
+                _selectedMonth = value!;
+                _fetchData = Provider.of<AuthManager>(context, listen: false)
+                    .fetchEmployeeData(
+                        month: _selectedMonth, year: _selectedYear);
+              });
+            },
+            items: List.generate(12, (index) => index + 1)
+                .map((month) => DropdownMenuItem<int>(
+                      value: month,
+                      child: Text('Tháng $month'),
+                    ))
+                .toList(),
+          ),
+          DropdownButton<int>(
+            value: _selectedYear,
+            onChanged: (value) {
+              setState(() {
+                _selectedYear = value!;
+                _fetchData = Provider.of<AuthManager>(context, listen: false)
+                    .fetchEmployeeData(
+                        month: _selectedMonth, year: _selectedYear);
+              });
+            },
+            items: List.generate(5, (index) => DateTime.now().year - index)
+                .map((year) => DropdownMenuItem<int>(
+                      value: year,
+                      child: Text('Năm $year'),
+                    ))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileCard(Employee? employee) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Card chứa thông tin nhân viên
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoRow("Tên", employee?.name),
-                    _buildInfoRow("Số điện thoại", employee?.phoneNumber),
-                    _buildInfoRow("Email", employee?.email),
-                    _buildInfoRow("Địa chỉ", employee?.address),
-                    _buildInfoRow(
-                        "Ngày bắt đầu", formatDate(employee?.startDate)),
-                    _buildInfoRow("Vai trò", getRole(employee?.role)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => ChangePassword(),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      "Đổi mật khẩu",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10), // Khoảng cách giữa 2 nút
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _logout(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      "Đăng xuất",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
+            _buildInfoRow('Tên', employee?.name),
+            _buildInfoRow('Số điện thoại', employee?.phoneNumber),
+            _buildInfoRow('Email', employee?.email),
+            _buildInfoRow('Địa chỉ', employee?.address),
+            _buildInfoRow('Ngày bắt đầu', _formatDate(employee?.startDate)),
+            _buildInfoRow('Vai trò', _getRole(employee?.role)),
+            _buildInfoRow(
+                'Lương theo giờ', _formatCurrency(employee?.hourlyRate)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(value ?? 'Không có dữ liệu',
+              style: const TextStyle(fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSection(
+      String title, List<dynamic> items, String Function(dynamic) itemBuilder) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0049ab))),
+            const SizedBox(height: 10),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const Divider(),
+              // itemBuilder: (context, index) => Text(
+              //   itemBuilder(items[index]),
+              //   style: const TextStyle(fontSize: 16),
+              // ),
+              itemBuilder: (context, index) {
+                String itemContent = itemBuilder(items[index]);
+                List<String> parts = itemContent.split('\n');
+
+                return Column(
+                  children: parts.map((part) {
+                    List<String> keyValue = part.split(': ');
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            keyValue[0],
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            keyValue.length > 1 ? keyValue[1] : '',
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                );
+              },
             ),
           ],
         ),
@@ -133,35 +245,77 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget hiển thị mỗi dòng thông tin trong Card
-  Widget _buildInfoRow(String label, String? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () =>
+                showDialog(context: context, builder: (_) => ChangePassword()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: const Text('Đổi mật khẩu',
+                style: TextStyle(color: Colors.white)),
           ),
-          Text(
-            value ?? "Không có dữ liệu",
-            style: const TextStyle(fontSize: 16),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () => _logout(context),
+            child: const Text('Đăng xuất'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    Provider.of<AuthManager>(context, listen: false).logout();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đăng xuất thành công!'),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
       ),
     );
   }
-}
 
-Future<void> _logout(BuildContext context) async {
-  Provider.of<AuthManager>(context, listen: false).logout();
+  String _getRole(String? role) {
+    return role == 'staff_serve'
+        ? 'Nhân viên phục vụ'
+        : role == 'staff_barista'
+            ? 'Nhân viên pha chế'
+            : 'Không xác định';
+  }
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Đăng xuất thành công!'),
-      duration: Duration(seconds: 2),
-      backgroundColor: Colors.green,
-    ),
-  );
+  String _getStatus(String status) {
+    return {
+          'scheduled': 'Đã lên lịch',
+          'completed': 'Hoàn thành',
+          'absent': 'Vắng mặt',
+          'pending': 'Chờ duyệt',
+          'paid': 'Đã trả'
+        }[status] ??
+        'Không xác định';
+  }
+
+  String _formatDate(String? date) {
+    return date == null
+        ? 'Không có dữ liệu'
+        : DateFormat('dd/MM/yyyy').format(DateTime.parse(date));
+  }
+
+  String _formatCurrency(dynamic amount) {
+    if (amount is String) {
+      amount = double.tryParse(amount) ?? 0; // Chuyển đổi từ String sang double
+    }
+    final formatCurrency =
+        NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
+    return formatCurrency.format(amount);
+  }
 }

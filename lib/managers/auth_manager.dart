@@ -6,11 +6,17 @@ import '../models/employee.dart';
 
 class AuthManager extends ChangeNotifier {
   Employee? _currentUser;
+  List<dynamic> _workSchedules = [];
+  List<dynamic> _bonusesPenalties = [];
+  List<dynamic> _salaries = [];
   bool _isLoading = false;
   String? _errorMessage;
   bool isAuth = false;
 
   Employee? get currentUser => _currentUser;
+  List<dynamic> get workSchedules => _workSchedules;
+  List<dynamic> get bonusesPenalties => _bonusesPenalties;
+  List<dynamic> get salaries => _salaries;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -101,5 +107,26 @@ class AuthManager extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user');
     notifyListeners();
+  }
+
+  Future<void> fetchEmployeeData({int? month, int? year}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _workSchedules = await _authService
+          .getWorkSchedules(_currentUser!.username, month: month, year: year);
+      _bonusesPenalties = await _authService.getBonusesPenalties(
+          _currentUser!.username,
+          month: month,
+          year: year);
+      _salaries = await _authService.getSalaries(_currentUser!.username,
+          month: month, year: year);
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

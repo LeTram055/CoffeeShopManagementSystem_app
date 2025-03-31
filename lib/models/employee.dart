@@ -11,33 +11,34 @@ class Employee {
   final String email;
   final String? address;
   final String startDate;
+  final String? hourlyRate;
 
-  Employee({
-    required this.employeeId,
-    required this.name,
-    required this.username,
-    required this.password,
-    required this.role,
-    required this.status,
-    required this.phoneNumber,
-    required this.email,
-    this.address,
-    required this.startDate,
-  });
+  Employee(
+      {required this.employeeId,
+      required this.name,
+      required this.username,
+      required this.password,
+      required this.role,
+      required this.status,
+      required this.phoneNumber,
+      required this.email,
+      this.address,
+      required this.startDate,
+      this.hourlyRate});
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      employeeId: json['employee_id'] ?? 0,
-      name: json['name'] ?? '',
-      username: json['username'] ?? '',
-      password: json['password'] ?? '',
-      role: json['role'] ?? '',
-      status: json['status'] ?? '',
-      phoneNumber: json['phone_number'] ?? '',
-      email: json['email'] ?? '',
-      address: json['address'] ?? '',
-      startDate: json['start_date'] ?? '',
-    );
+        employeeId: json['employee_id'] ?? 0,
+        name: json['name'] ?? '',
+        username: json['username'] ?? '',
+        password: json['password'] ?? '',
+        role: json['role'] ?? '',
+        status: json['status'] ?? '',
+        phoneNumber: json['phone_number'] ?? '',
+        email: json['email'] ?? '',
+        address: json['address'] ?? '',
+        startDate: json['start_date'] ?? '',
+        hourlyRate: json['hourly_rate'] ?? '');
   }
 
   String toJson() {
@@ -52,6 +53,7 @@ class Employee {
       "email": email,
       "address": address,
       "start_date": startDate,
+      "hourly_rate": hourlyRate,
     });
   }
 }
