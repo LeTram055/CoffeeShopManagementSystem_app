@@ -67,28 +67,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildProfileCard(employee),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   _buildFilterSection(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   _buildSection(
                       'Lịch làm việc',
                       authManager.workSchedules,
                       (schedule) =>
                           'Ca: ${schedule['shift']['name']} (${schedule['shift']['start_time']} - ${schedule['shift']['end_time']})\nNgày: ${_formatDate(schedule['work_date'])}\nTrạng thái: ${_getStatus(schedule['status'])}'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   _buildSection(
                       'Thưởng/Phạt',
                       authManager.bonusesPenalties,
                       (bonusPenalty) =>
                           'Lí do: ${bonusPenalty['reason']}\nSố tiền: ${_formatCurrency(bonusPenalty['amount'])}\nNgày: ${_formatDate(bonusPenalty['date'])}'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   _buildSection(
                       'Lương',
                       authManager.salaries,
                       (salary) =>
                           'Tháng: ${salary['month']}\nNăm: ${salary['year']}\nTổng: ${_formatCurrency(salary['total_salary'])}\nThưởng/Phạt: ${_formatCurrency(salary['total_bonus_penalty'])}\nLương cuối: ${_formatCurrency(salary['final_salary'])}\nTrạng thái: ${_getStatus(salary['status'])}'),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   _buildActionButtons(context),
+                  const SizedBox(height: 12),
                 ],
               ),
             );
@@ -176,7 +177,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style:
                   const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           Text(value ?? 'Không có dữ liệu',
-              style: const TextStyle(fontSize: 16)),
+              style: const TextStyle(
+                  fontSize: 16, color: Color.fromARGB(255, 87, 87, 87))),
         ],
       ),
     );
@@ -230,7 +232,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text(
                             keyValue.length > 1 ? keyValue[1] : '',
                             textAlign: TextAlign.right,
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(
+                                fontSize: 16,
+                                color: Color.fromARGB(255, 87, 87, 87)),
                           ),
                         ),
                       ],
