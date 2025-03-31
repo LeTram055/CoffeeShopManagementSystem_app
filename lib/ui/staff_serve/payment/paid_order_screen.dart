@@ -153,7 +153,7 @@ class _PaidOrdersScreenState extends State<PaidOrdersScreen> {
                 color: Theme.of(context).colorScheme.surface,
                 shadowColor: Theme.of(context).colorScheme.shadow,
                 elevation: 4,
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: ListTile(
                     title: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

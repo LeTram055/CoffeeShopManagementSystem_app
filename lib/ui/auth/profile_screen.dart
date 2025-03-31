@@ -62,7 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return Center(child: Text('Lỗi: ${snapshot.error}'));
           } else {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
