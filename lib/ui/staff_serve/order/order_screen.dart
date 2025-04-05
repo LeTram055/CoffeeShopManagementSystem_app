@@ -346,29 +346,40 @@ class _OrderServeScreenState extends State<OrderServeScreen> {
       items: selectedItems, // Danh sách OrderItem
     );
 
+    final orderManager = Provider.of<OrderServeManager>(context, listen: false);
     // Lưu đơn hàng vào cơ sở dữ liệu
     try {
-      await Provider.of<OrderServeManager>(context, listen: false)
-          .createOrder(newOrder);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Đã lập đơn thành công!"),
-          backgroundColor: Colors.green,
-        ),
-      );
+      await orderManager.createOrder(newOrder);
+      if (orderManager.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(orderManager.errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(orderManager.successMessage ?? 'Lập đơn thành công!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+          ),
+        );
 
-      setState(() {
-        selectedItems.clear();
-        selectedCustomer = null;
-      });
-
-      // Quay về màn hình trước đó
-      Navigator.pop(context, true);
+        setState(() {
+          selectedItems.clear();
+          selectedCustomer = null;
+        });
+        // Quay về màn hình trước đó
+        Navigator.pop(context, true);
+      }
     } catch (error) {
       // Xử lý lỗi khi lưu đơn hàng
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Lỗi khi lập đơn hàng!'),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
       ));
     }
   }

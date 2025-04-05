@@ -15,6 +15,7 @@ class OrderServeManager extends ChangeNotifier {
   List<Promotion> _promotions = [];
   bool _isLoading = false;
   String? _errorMessage;
+  String? _successMessage;
 
   List<table_model.Table> get tables => _tables;
   List<Customer> get customers => _customers;
@@ -22,6 +23,7 @@ class OrderServeManager extends ChangeNotifier {
   List<Promotion> get promotions => _promotions;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  String? get successMessage => _successMessage;
 
   Future<void> loadTables() async {
     print("🔄 Đang tải danh sách bàn...");
@@ -86,12 +88,20 @@ class OrderServeManager extends ChangeNotifier {
   Future<void> createOrder(Order order) async {
     _isLoading = true;
     _errorMessage = null;
+    _successMessage = null;
+
     notifyListeners();
 
     try {
-      await _orderService.createOrder(order);
+      final message = await _orderService.createOrder(order);
+      _successMessage = message;
     } catch (error) {
-      _errorMessage = error.toString();
+      final rawError = error.toString();
+      if (rawError.startsWith('Exception: ')) {
+        _errorMessage = rawError.replaceFirst('Exception: ', '');
+      } else {
+        _errorMessage = rawError;
+      }
     }
 
     _isLoading = false;
@@ -120,12 +130,19 @@ class OrderServeManager extends ChangeNotifier {
   Future<void> updateOrder(Order order) async {
     _isLoading = true;
     _errorMessage = null;
+    _successMessage = null;
     notifyListeners();
 
     try {
-      await _orderService.updateOrder(order);
+      final message = await _orderService.updateOrder(order);
+      _successMessage = message;
     } catch (error) {
-      _errorMessage = error.toString();
+      final rawError = error.toString();
+      if (rawError.startsWith('Exception: ')) {
+        _errorMessage = rawError.replaceFirst('Exception: ', '');
+      } else {
+        _errorMessage = rawError;
+      }
     }
 
     _isLoading = false;
@@ -135,12 +152,19 @@ class OrderServeManager extends ChangeNotifier {
   Future<void> cancelOrder(int orderId) async {
     _isLoading = true;
     _errorMessage = null;
+    _successMessage = null;
     notifyListeners();
 
     try {
-      await _orderService.cancelOrder(orderId);
+      final message = await _orderService.cancelOrder(orderId);
+      _successMessage = message;
     } catch (error) {
-      _errorMessage = error.toString();
+      final rawError = error.toString();
+      if (rawError.startsWith('Exception: ')) {
+        _errorMessage = rawError.replaceFirst('Exception: ', '');
+      } else {
+        _errorMessage = rawError;
+      }
     }
 
     _isLoading = false;

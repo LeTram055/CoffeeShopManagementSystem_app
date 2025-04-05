@@ -1,4 +1,3 @@
-import 'package:coffeeshop/ui/staff_serve/order/table_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -230,47 +229,74 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       items: selectedItems, // Danh sách OrderItem
     );
 
+    final orderManager = Provider.of<OrderServeManager>(context, listen: false);
     // Lưu đơn hàng vào cơ sở dữ liệu
     try {
-      await Provider.of<OrderServeManager>(context, listen: false)
-          .updateOrder(newOrder);
+      await orderManager.updateOrder(newOrder);
 
-      setState(() {
-        selectedItems.clear();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cập nhật đơn hàng thành công!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Quay về màn hình trước đó
-      Navigator.pop(context, true);
+      if (orderManager.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(orderManager.errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        setState(() {
+          selectedItems.clear();
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                orderManager.successMessage ?? 'Cập nhật đơn hàng thành công!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+
+        Navigator.pop(context, true);
+      }
     } catch (error) {
       // Xử lý lỗi khi lưu đơn hàng
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Lỗi khi cập nhật đơn hàng!'),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
       ));
     }
   }
 
   void cancelOrder(BuildContext context) async {
+    final orderManager = Provider.of<OrderServeManager>(context, listen: false);
     try {
-      await Provider.of<OrderServeManager>(context, listen: false)
-          .cancelOrder(widget.order.orderId);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Hủy đơn hàng thành công!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context, true);
+      await orderManager.cancelOrder(widget.order.orderId);
+      if (orderManager.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(orderManager.errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text(orderManager.successMessage ?? "Hủy đơn hàng thành công!"),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        Navigator.pop(context, true);
+      }
     } catch (error) {
       // Xử lý lỗi khi lưu đơn hàng
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Lỗi khi hủy đơn hàng!'),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 5),
       ));
     }
   }

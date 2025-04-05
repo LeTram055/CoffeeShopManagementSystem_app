@@ -98,7 +98,7 @@ class OrderServeService {
     }
   }
 
-  Future<void> createOrder(Order order) async {
+  Future<String> createOrder(Order order) async {
     final url = Uri.parse('$baseUrl/orders/create');
 
     try {
@@ -108,11 +108,21 @@ class OrderServeService {
         body: jsonEncode(order.toJson()),
       );
 
+      final data = jsonDecode(response.body);
+
       if (response.statusCode != 200) {
-        throw Exception('Cập nhật số lượng thất bại');
+        // Nếu có danh sách lỗi chi tiết từ Laravel
+        if (data['errors'] != null && data['errors'] is List) {
+          // Gộp tất cả lỗi thành chuỗi
+          final errorList = (data['errors'] as List).join('\n');
+          throw Exception(errorList);
+        }
+        // Nếu không có danh sách lỗi chi tiết
+        throw Exception(data['message'] ?? 'Không thể tạo đơn hàng');
       }
+      return data['message'];
     } catch (e) {
-      throw Exception('Lỗi: $e');
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
@@ -135,7 +145,7 @@ class OrderServeService {
     return null;
   }
 
-  Future<void> updateOrder(Order order) async {
+  Future<String> updateOrder(Order order) async {
     final url = Uri.parse('$baseUrl/orders/update');
     try {
       final response = await http.post(
@@ -143,25 +153,42 @@ class OrderServeService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(order.toJson()),
       );
-
+      final data = jsonDecode(response.body);
       if (response.statusCode != 200) {
-        throw Exception('Cập nhật số lượng thất bại');
+        // Nếu có danh sách lỗi chi tiết từ Laravel
+        if (data['errors'] != null && data['errors'] is List) {
+          // Gộp tất cả lỗi thành chuỗi
+          final errorList = (data['errors'] as List).join('\n');
+          throw Exception(errorList);
+        }
+        // Nếu không có danh sách lỗi chi tiết
+        throw Exception(data['message'] ?? 'Không thể cập nhật đơn hàng');
       }
+      return data['message'];
     } catch (e) {
-      throw Exception('Lỗi: $e');
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
-  Future<void> cancelOrder(int orderId) async {
+  Future<String> cancelOrder(int orderId) async {
     final url = Uri.parse('$baseUrl/orders/cancel/$orderId');
     try {
       final response = await http.post(url);
+      final data = jsonDecode(response.body);
 
       if (response.statusCode != 200) {
-        throw Exception('Hủy đơn hàng thất bại');
+        // Nếu có danh sách lỗi chi tiết từ Laravel
+        if (data['errors'] != null && data['errors'] is List) {
+          // Gộp tất cả lỗi thành chuỗi
+          final errorList = (data['errors'] as List).join('\n');
+          throw Exception(errorList);
+        }
+        // Nếu không có danh sách lỗi chi tiết
+        throw Exception(data['message'] ?? 'Không thể hủy đơn hàng');
       }
+      return data['message'];
     } catch (e) {
-      throw Exception('Lỗi: $e');
+      throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
@@ -182,8 +209,6 @@ class OrderServeService {
     final url = Uri.parse('$baseUrl/promotions/$orderId');
     try {
       final response = await http.get(url);
-      print('Response: ${response.body}');
-      print('Status code: ${response.statusCode}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
