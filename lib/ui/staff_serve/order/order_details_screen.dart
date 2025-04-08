@@ -5,6 +5,7 @@ import '../../../managers/staff_serve/order_manager.dart';
 import '../../../models/order.dart';
 import '../../../models/order_item.dart';
 import '../../../models/menu_item.dart';
+import '../../../models/table.dart' as table_model;
 import 'dart:async';
 import 'payment_modal.dart';
 
@@ -20,7 +21,7 @@ class OrderDetailsScreen extends StatefulWidget {
 class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   List<OrderItem> selectedItems = [];
   TextEditingController searchController = TextEditingController();
-
+  int? selectedTableId;
   Timer? _searchFocusTimer;
   FocusNode _searchFocusNode = FocusNode();
   List<FocusNode> _focusNodes = [];
@@ -29,9 +30,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    selectedTableId = widget.order.tableId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<OrderServeManager>(context, listen: false).loadCustomers();
       Provider.of<OrderServeManager>(context, listen: false).loadMenu();
+      Provider.of<OrderServeManager>(context, listen: false).loadTables();
     });
     _updateFocusNodes();
   }
@@ -216,10 +219,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       totalPrice += item.item.price * item.quantity;
     });
 
+    print("bàn $selectedTableId");
     // Tạo đối tượng Order
     Order newOrder = Order(
       orderId: widget.order.orderId,
-      tableId: widget.order.tableId,
+      tableId: selectedTableId!,
       tableNumber: widget.order.tableNumber,
       customerId: widget.order.customerId,
       orderType: 'dine_in',
@@ -321,6 +325,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     bool isConfirmed = widget.order.status == "confirmed";
     bool isReceived = widget.order.status == "received";
 
+    final orderManager = Provider.of<OrderServeManager>(context);
+    List<table_model.Table> tables = orderManager.tables;
+
+    List<table_model.Table> availableTables = tables.where((table) {
+      return table.tableId == widget.order.tableId || table.statusId == 1;
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -358,6 +369,36 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (isConfirmed) // Chỉ hiển thị dropdown khi đơn hàng đã xác nhận
+                    Expanded(
+                      // Sử dụng Expanded để cung cấp chiều rộng cho DropdownButtonFormField
+                      child: DropdownButtonFormField<int>(
+                        value: selectedTableId,
+                        items: availableTables.map<DropdownMenuItem<int>>(
+                            (table_model.Table table) {
+                          return DropdownMenuItem<int>(
+                            value:
+                                table.tableId, // Sử dụng tableId từ lớp Table
+                            child: Text(
+                                "Bàn ${table.tableNumber}"), // Sử dụng tableNumber từ lớp Table
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          setState(() {
+                            selectedTableId = newValue; // Cập nhật ID bàn mới
+                          });
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Chọn bàn mới",
+                        ),
+                      ),
+                    ),
                 ],
               ),
               const SizedBox(height: 8),
