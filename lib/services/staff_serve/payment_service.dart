@@ -10,8 +10,15 @@ class PaymentService {
   final String? baseUrl = dotenv.env['SERVE_URL'];
 
   // Lấy danh sách đơn đã thanh toán
-  Future<List<Payment>> fetchPaidOrders() async {
-    final url = Uri.parse('$baseUrl/payment/paid-orders');
+  Future<List<Payment>> fetchPaidOrders(
+      {DateTime? startDate, DateTime? endDate}) async {
+    final queryParams = {
+      if (startDate != null) 'start_date': startDate.toIso8601String(),
+      if (endDate != null) 'end_date': endDate.toIso8601String(),
+    };
+    final url = Uri.parse('$baseUrl/payment/paid-orders')
+        .replace(queryParameters: queryParams);
+    //final url = Uri.parse('$baseUrl/payment/paid-orders');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {

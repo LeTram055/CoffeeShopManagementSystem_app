@@ -11,12 +11,15 @@ class PaymentManager extends ChangeNotifier {
 
   final PaymentService _paymentService = PaymentService();
 
-  Future<void> loadPaidOrders() async {
+  Future<void> loadPaidOrders({DateTime? startDate, DateTime? endDate}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _paidOrders = await _paymentService.fetchPaidOrders();
+      _paidOrders = await _paymentService.fetchPaidOrders(
+        startDate: startDate,
+        endDate: endDate,
+      );
     } catch (e) {
       print("Lỗi tải đơn đã thanh toán: $e");
     }

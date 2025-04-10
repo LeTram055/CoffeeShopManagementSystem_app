@@ -21,6 +21,115 @@ class _PaidOrdersScreenState extends State<PaidOrdersScreen> {
     });
   }
 
+  DateTime? _startDate;
+  DateTime? _endDate;
+
+  void _showFilterDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Lọc theo ngày thanh toán',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _startDate ?? DateTime.now(),
+                          firstDate: DateTime(2022),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            _startDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _startDate != null
+                              ? 'Từ: ${DateFormat('dd/MM/yyyy').format(_startDate!)}'
+                              : 'Chọn ngày bắt đầu',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _endDate ?? DateTime.now(),
+                          firstDate: DateTime(2022),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            _endDate = picked;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          _endDate != null
+                              ? 'Đến: ${DateFormat('dd/MM/yyyy').format(_endDate!)}'
+                              : 'Chọn ngày kết thúc',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Đóng bottom sheet
+                  Provider.of<PaymentManager>(context, listen: false)
+                      .loadPaidOrders(startDate: _startDate, endDate: _endDate);
+                },
+                icon: const Icon(
+                  Icons.filter_alt,
+                  color: Colors.white,
+                ),
+                label: const Text("Lọc", style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 45),
+                  backgroundColor: const Color(0xFF0049ab),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showInvoiceDialog(BuildContext context, String filePath,
       PaymentManager paymentManager) async {
     showDialog(
@@ -134,6 +243,14 @@ class _PaidOrdersScreenState extends State<PaidOrdersScreen> {
           ],
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_alt),
+            onPressed: () {
+              _showFilterDialog(context); // Gọi hàm show dialog
+            },
+          ),
+        ],
       ),
       body: Consumer<PaymentManager>(
         builder: (context, paymentManager, child) {
@@ -156,24 +273,25 @@ class _PaidOrdersScreenState extends State<PaidOrdersScreen> {
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: ListTile(
                     title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'MTT: ${payment.paymentId}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'MTT: ${payment.paymentId}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                          Text(
-                            '${NumberFormat("#,###", "vi_VN").format(payment.finalPrice)}đ',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
+                        ),
+                        Text(
+                          '${NumberFormat("#,###", "vi_VN").format(payment.finalPrice)}đ',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
-                        ]),
+                        ),
+                      ],
+                    ),
                     subtitle: Text(
                         '${DateFormat('HH:mm:ss dd/MM/yyyy').format(payment.paymentTime)}'),
                     trailing: IconButton(
