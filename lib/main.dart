@@ -99,13 +99,9 @@ class MyApp extends StatelessWidget {
             title: 'Hope Cafe',
             theme: themeData,
             debugShowCheckedModeBanner: false,
-            home: authManager.isAuth
-                ? (authManager.currentUser?.role == 'staff_barista'
-                    ? const HomeBarista()
-                    : const HomeServe())
-                : LoginScreen(),
+            home: authManager.isAuth ? const HomeServe() : LoginScreen(),
             routes: {
-              HomeBarista.routeName: (context) => const HomeBarista(),
+              //HomeBarista.routeName: (context) => const HomeBarista(),
               MenuScreen.routeName: (context) => MenuScreen(),
               IngredientScreen.routeName: (context) => IngredientScreen(),
               ProfileScreen.routeName: (context) => ProfileScreen(),
@@ -119,42 +115,42 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeBarista extends StatefulWidget {
-  static const routeName = '/home';
-  const HomeBarista({super.key});
+// class HomeBarista extends StatefulWidget {
+//   static const routeName = '/home';
+//   const HomeBarista({super.key});
 
-  @override
-  State<HomeBarista> createState() => _HomeBaristaState();
-}
+//   @override
+//   State<HomeBarista> createState() => _HomeBaristaState();
+// }
 
-class _HomeBaristaState extends State<HomeBarista> {
-  int _selectedIndex = 0; // Index của mục bottombar đã chọn
+// class _HomeBaristaState extends State<HomeBarista> {
+//   int _selectedIndex = 0; // Index của mục bottombar đã chọn
 
-  final List<Widget> _pages = [
-    OrderScreen(),
-    MenuScreen(),
-    IngredientScreen(),
-    ProfileScreen(),
-  ]; // Danh sách các trang
+//   final List<Widget> _pages = [
+//     OrderScreen(),
+//     MenuScreen(),
+//     IngredientScreen(),
+//     ProfileScreen(),
+//   ]; // Danh sách các trang
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index; // Cập nhật chỉ mục đã chọn
-    });
-  }
+//   void _onItemTapped(int index) {
+//     setState(() {
+//       _selectedIndex = index; // Cập nhật chỉ mục đã chọn
+//     });
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex], // Hiển thị trang dựa trên chỉ mục đã chọn
-      bottomNavigationBar: BottomBar(
-        // Sử dụng BottomBar
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: _pages[_selectedIndex], // Hiển thị trang dựa trên chỉ mục đã chọn
+//       bottomNavigationBar: BottomBar(
+//         // Sử dụng BottomBar
+//         selectedIndex: _selectedIndex,
+//         onItemTapped: _onItemTapped,
+//       ),
+//     );
+//   }
+// }
 
 class HomeServe extends StatefulWidget {
   static const routeName = '/home-serve';
