@@ -8,7 +8,12 @@ class SocketService {
   static final List<OverlaySupportEntry> _notifications =
       []; // Danh sách thông báo
 
-  void showOrderCompletedNotification(String tableId) {
+  void showNotification({
+    required String message,
+    required Color color,
+    IconData icon = Icons.info,
+    Duration duration = const Duration(seconds: 5),
+  }) {
     double baseTopMargin = MediaQueryData.fromView(
                 WidgetsBinding.instance.platformDispatcher.views.first)
             .size
@@ -25,13 +30,13 @@ class SocketService {
     entry = showOverlayNotification(
       (context) => Card(
         margin: EdgeInsets.only(top: topMargin, left: 20, right: 20),
-        color: Colors.green,
+        color: color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: ListTile(
           leading:
               const Icon(Icons.check_circle, color: Colors.white, size: 30),
           title: Text(
-            "Đơn hàng bàn $tableId đã hoàn thành!",
+            message,
             style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
           trailing: Padding(
@@ -64,6 +69,8 @@ class SocketService {
       print('✅ Connected to WebSocket Server');
       socket.emit('subscribe',
           {'channel': 'laravel_database_ordercompleted', 'auth': {}});
+      socket.emit(
+          'subscribe', {'channel': 'laravel_database_orderissue', 'auth': {}});
     });
 
     socket.on('order.completed', (data) {
@@ -76,8 +83,35 @@ class SocketService {
           var order = orderData['order'];
           String tableId = order['table_id'].toString();
 
-          showOrderCompletedNotification(tableId);
+          showNotification(
+            message: "Đơn hàng bàn $tableId đã hoàn thành!",
+            color: Colors.green,
+            icon: Icons.check_circle,
+          );
         }
+      } else {
+        print("⚠️ Dữ liệu không đúng định dạng: $data");
+      }
+    });
+
+    socket.on('order.issue', (data) {
+      print('🔥 Dữ liệu nhận từ WebSocket: $data');
+
+      // Kiểm tra xem dữ liệu có phải là danh sách và có ít nhất 2 phần tử không
+      if (data is List && data.length > 1 && data[1] is Map<String, dynamic>) {
+        var orderData = data[1]; // Lấy phần tử thứ hai của danh sách
+
+        // Trích xuất thông tin từ orderData
+        String orderId = orderData['order_id'].toString();
+        String itemName = orderData['item_name'].toString();
+        String reason = orderData['reason'];
+
+        // Hiển thị thông báo cho nhân viên phục vụ
+        showNotification(
+          message: "Đơn hàng #$orderId, Món: $itemName gặp trục trặc: $reason",
+          color: Colors.red,
+          icon: Icons.warning,
+        );
       } else {
         print("⚠️ Dữ liệu không đúng định dạng: $data");
       }

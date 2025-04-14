@@ -5,6 +5,7 @@ class OrderItem {
   final int itemId;
   final int quantity;
   final String? note;
+  final String? status;
   final MenuItem item;
 
   OrderItem({
@@ -12,6 +13,7 @@ class OrderItem {
     required this.itemId,
     required this.quantity,
     this.note,
+    this.status,
     required this.item,
   });
 
@@ -21,6 +23,7 @@ class OrderItem {
       itemId: json['item_id'],
       quantity: json['quantity'],
       note: json['note'] as String?,
+      status: json['status'] as String?,
       item: MenuItem.fromJson(json['item']),
     );
   }
@@ -31,6 +34,7 @@ class OrderItem {
       'item_id': itemId,
       'quantity': quantity,
       'note': note,
+      'status': status,
       'item': item.toJson(),
     };
   }
