@@ -159,6 +159,7 @@ class OrderServeService {
         if (data['errors'] != null && data['errors'] is List) {
           // Gộp tất cả lỗi thành chuỗi
           final errorList = (data['errors'] as List).join('\n');
+          print("errorList: $errorList");
           throw Exception(errorList);
         }
         // Nếu không có danh sách lỗi chi tiết
@@ -166,6 +167,7 @@ class OrderServeService {
       }
       return data['message'];
     } catch (e) {
+      print("Error: $e");
       throw Exception(e.toString().replaceFirst('Exception: ', ''));
     }
   }

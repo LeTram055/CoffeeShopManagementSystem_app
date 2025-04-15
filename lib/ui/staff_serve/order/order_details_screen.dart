@@ -26,10 +26,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   FocusNode _searchFocusNode = FocusNode();
   List<FocusNode> _focusNodes = [];
   List<Timer?> _noteFocusTimers = [];
+  List<OrderItem> orderItems = [];
 
   @override
   void initState() {
     super.initState();
+    orderItems = List.from(widget.order.items);
     selectedTableId = widget.order.tableId;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<OrderServeManager>(context, listen: false).loadCustomers();
@@ -142,14 +144,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               itemId: item.itemId,
                               quantity:
                                   selectedItems[existingIndex].quantity + 1,
-                              item: item, // Thêm MenuItem vào OrderItem
+                              item: item,
+                              status: selectedItems[existingIndex]
+                                  .status, // Thêm MenuItem vào OrderItem
+                              note: selectedItems[existingIndex].note,
                             );
                           } else {
                             selectedItems.add(OrderItem(
                               orderId: orderId, // Giá trị tạm thời
                               itemId: item.itemId,
                               quantity: 1,
-                              item: item, // Thêm MenuItem vào OrderItem
+                              item: item,
+                              status: "order", // Thêm MenuItem vào OrderItem
+                              note: null,
                             ));
                           }
                         });
@@ -203,6 +210,46 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   void updateOrder(BuildContext context) async {
+    bool hasChanges = false;
+    print("Selected items: ${selectedItems.length}");
+    print("Original items: ${orderItems.length}");
+    if (selectedItems.length != orderItems.length) {
+      hasChanges = true; // Số lượng món thay đổi
+    } else {
+      for (int i = 0; i < selectedItems.length; i++) {
+        OrderItem currentItem = selectedItems[i];
+        OrderItem? originalItem = orderItems.firstWhere(
+          (item) => item.itemId == currentItem.itemId,
+          orElse: () => OrderItem(
+            orderId: -1, // Giá trị mặc định
+            itemId: -1, // Giá trị mặc định
+            quantity: 0,
+            item: currentItem.item,
+            status: "unknown", // Trạng thái mặc định
+          ),
+        );
+
+        if (originalItem.orderId == -1 ||
+            currentItem.quantity != originalItem.quantity ||
+            (currentItem.note != originalItem.note &&
+                originalItem.status == "order")) {
+          hasChanges = true; // Phát hiện thay đổi trong số lượng hoặc ghi chú
+          break;
+        }
+      }
+    }
+
+    // Nếu không có thay đổi, hiển thị thông báo và thoát
+    if (!hasChanges) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không có thay đổi nào để cập nhật!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     if (selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -219,7 +266,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       totalPrice += item.item.price * item.quantity;
     });
 
-    print("bàn $selectedTableId");
     // Tạo đối tượng Order
     Order newOrder = Order(
       orderId: widget.order.orderId,
@@ -324,6 +370,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     selectedItems = widget.order.items;
     bool isConfirmed = widget.order.status == "confirmed";
     bool isReceived = widget.order.status == "received";
+    bool isEditable =
+        widget.order.status == "confirmed" || widget.order.status == "received";
 
     final orderManager = Provider.of<OrderServeManager>(context);
     List<table_model.Table> tables = orderManager.tables;
@@ -374,7 +422,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  if (isConfirmed) // Chỉ hiển thị dropdown khi đơn hàng đã xác nhận
+                  if (isEditable) // Chỉ hiển thị dropdown khi đơn hàng đã xác nhận
                     Expanded(
                       // Sử dụng Expanded để cung cấp chiều rộng cho DropdownButtonFormField
                       child: DropdownButtonFormField<int>(
@@ -393,7 +441,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                             selectedTableId = newValue; // Cập nhật ID bàn mới
                           });
                         },
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: "Chọn bàn mới",
                         ),
@@ -445,7 +493,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  if (isConfirmed)
+                  if (isEditable)
                     ElevatedButton.icon(
                       onPressed: () =>
                           showItemSelection(context, widget.order.orderId),
@@ -515,15 +563,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                         ],
                                       ),
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
                                         children: [
-                                          if (isConfirmed)
+                                          if (isEditable)
                                             IconButton(
                                               icon: const Icon(
                                                   Icons.remove_circle,
                                                   color: Colors.red),
                                               onPressed: () {
                                                 setState(() {
-                                                  if (item.quantity > 1) {
+                                                  if (item.quantity >
+                                                      (item.completedQuantity ??
+                                                          1)) {
                                                     selectedItems[index] =
                                                         OrderItem(
                                                       orderId: item.orderId,
@@ -532,6 +584,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                                           item.quantity - 1,
                                                       note: item.note,
                                                       item: item.item,
+                                                      status: item.status,
                                                     );
                                                   }
                                                 });
@@ -539,9 +592,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                             ),
                                           Padding(
                                             padding: EdgeInsets.symmetric(
-                                                horizontal: isReceived
-                                                    ? 8
-                                                    : 0), // Căn giữa khi không có nút
+                                                horizontal:
+                                                    0), // Căn giữa khi không có nút
                                             child: Text(
                                               "${item.quantity}",
                                               style: const TextStyle(
@@ -549,7 +601,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                                   fontSize: 16),
                                             ),
                                           ),
-                                          if (isConfirmed)
+                                          if (isEditable)
                                             IconButton(
                                               icon: const Icon(Icons.add_circle,
                                                   color: Colors.green),
@@ -562,19 +614,28 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                                     quantity: item.quantity + 1,
                                                     note: item.note,
                                                     item: item.item,
+                                                    status: item.status,
                                                   );
                                                 });
                                               },
                                             ),
-                                          if (isConfirmed)
-                                            IconButton(
-                                              icon: const Icon(Icons.delete,
-                                                  color: Colors.red),
-                                              onPressed: () {
-                                                setState(() {
-                                                  selectedItems.removeAt(index);
-                                                });
-                                              },
+                                          if (isEditable)
+                                            SizedBox(
+                                              width:
+                                                  30, // Đảm bảo kích thước cố định
+                                              child: item.status != "completed"
+                                                  ? IconButton(
+                                                      icon: const Icon(
+                                                          Icons.delete,
+                                                          color: Colors.red),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          selectedItems
+                                                              .removeAt(index);
+                                                        });
+                                                      },
+                                                    )
+                                                  : null, // Không hiển thị nút xóa nếu món đã hoàn thành
                                             ),
                                         ],
                                       ),
@@ -599,8 +660,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                     ),
                                     style: TextStyle(
                                         fontSize: 14, color: Colors.grey[800]),
-                                    readOnly: isReceived,
-                                    onChanged: isConfirmed
+                                    readOnly: !isEditable,
+                                    onChanged: isEditable
                                         ? null
                                         : (value) {
                                             _noteFocusTimers[index]?.cancel();
@@ -622,7 +683,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                               }
                                             });
                                           },
-                                    onTap: isConfirmed
+                                    onTap: (isEditable)
                                         ? null
                                         : () {
                                             // Nếu nhấn vào ô nhưng chưa nhập gì, đặt timer để mất focus sau 5 giây
@@ -650,7 +711,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     },
                   ),
                 ),
-              if (isConfirmed)
+              if (isEditable)
                 Text(
                   "Tổng: ${NumberFormat("#,###", "vi_VN").format(
                     selectedItems.fold<double>(0.0,
@@ -675,21 +736,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              if (isConfirmed) ...[
-                ElevatedButton.icon(
-                  onPressed: () => cancelOrder(context),
-                  icon: const Icon(Icons.cancel, color: Colors.white),
-                  label: const Text("Hủy đơn",
-                      style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 16),
-                    backgroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                ),
+              if (isEditable) ...[
                 ElevatedButton.icon(
                   onPressed: () => updateOrder(context),
                   icon: const Icon(Icons.update, color: Colors.white),
@@ -705,28 +752,26 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                 ),
               ],
-              if (isReceived)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                  ),
-                  child: Text(
-                    "Tổng: ${NumberFormat("#,###", "vi_VN").format(
-                      selectedItems.fold<double>(
-                          0.0,
-                          (sum, item) =>
-                              sum + (item.quantity * item.item.price)),
-                    )}đ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.secondary,
+              if (isConfirmed &&
+                  !selectedItems.any((item) => item.status == "completed")) ...[
+                ElevatedButton.icon(
+                  onPressed: () => cancelOrder(context),
+                  icon: const Icon(Icons.cancel, color: Colors.white),
+                  label: const Text("Hủy đơn",
+                      style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
                     ),
                   ),
                 ),
-              if (isReceived)
+              ],
+              if (isReceived &&
+                  selectedItems
+                      .every((item) => item.status == "completed")) ...[
                 ElevatedButton.icon(
                   onPressed: () async {
                     final result = await showModalBottomSheet<bool>(
@@ -757,9 +802,37 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     ),
                   ),
                 ),
+              ],
             ],
           ),
         ),
+        // Positioned(
+        //   bottom: 10,
+        //   left: 20,
+        //   right: 20,
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [
+        //       if (isEditable) ...[
+        //         ElevatedButton.icon(
+        //           onPressed: () => updateOrder(context),
+        //           icon: const Icon(Icons.update, color: Colors.white),
+        //           label: const Text("Cập nhật",
+        //               style: TextStyle(color: Colors.white)),
+        //           style: ElevatedButton.styleFrom(
+        //             padding: const EdgeInsets.symmetric(
+        //                 vertical: 12, horizontal: 16),
+        //             backgroundColor: Theme.of(context).colorScheme.primary,
+        //             shape: RoundedRectangleBorder(
+        //               borderRadius: BorderRadius.circular(24),
+        //             ),
+        //           ),
+        //         ),
+        //       ],
+
+        //     ],
+        //   ),
+        // ),
       ]),
     );
   }
