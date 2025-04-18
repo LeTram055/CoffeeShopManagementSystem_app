@@ -543,24 +543,29 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.item.name,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "${NumberFormat("#,###", "vi_VN").format(item.item.price)}đ",
-                                            style: const TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 14),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.item.name,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                              maxLines:
+                                                  1, // Giới hạn số dòng hiển thị
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "${NumberFormat("#,###", "vi_VN").format(item.item.price)}đ",
+                                              style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       Row(
                                         mainAxisAlignment:
@@ -591,7 +596,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                               },
                                             ),
                                           Padding(
-                                            padding: EdgeInsets.symmetric(
+                                            padding: const EdgeInsets.symmetric(
                                                 horizontal:
                                                     0), // Căn giữa khi không có nút
                                             child: Text(
@@ -806,33 +811,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ],
           ),
         ),
-        // Positioned(
-        //   bottom: 10,
-        //   left: 20,
-        //   right: 20,
-        //   child: Row(
-        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //     children: [
-        //       if (isEditable) ...[
-        //         ElevatedButton.icon(
-        //           onPressed: () => updateOrder(context),
-        //           icon: const Icon(Icons.update, color: Colors.white),
-        //           label: const Text("Cập nhật",
-        //               style: TextStyle(color: Colors.white)),
-        //           style: ElevatedButton.styleFrom(
-        //             padding: const EdgeInsets.symmetric(
-        //                 vertical: 12, horizontal: 16),
-        //             backgroundColor: Theme.of(context).colorScheme.primary,
-        //             shape: RoundedRectangleBorder(
-        //               borderRadius: BorderRadius.circular(24),
-        //             ),
-        //           ),
-        //         ),
-        //       ],
-
-        //     ],
-        //   ),
-        // ),
       ]),
     );
   }

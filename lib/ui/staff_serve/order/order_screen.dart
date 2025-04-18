@@ -541,24 +541,29 @@ class _OrderServeScreenState extends State<OrderServeScreen> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.item.name,
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            "${NumberFormat("#,###", "vi_VN").format(item.item.price)}đ",
-                                            style: const TextStyle(
-                                                color: Colors.red,
-                                                fontSize: 14),
-                                          ),
-                                        ],
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.item.name,
+                                              style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16),
+                                              maxLines:
+                                                  1, // Giới hạn số dòng hiển thị
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "${NumberFormat("#,###", "vi_VN").format(item.item.price)}đ",
+                                              style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       Row(
                                         children: [
