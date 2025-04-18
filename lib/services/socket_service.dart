@@ -105,13 +105,17 @@ class SocketService {
         String orderId = orderData['order_id'].toString();
         String itemName = orderData['item_name'].toString();
         String reason = orderData['reason'];
+        String orderType = orderData['order_type'].toString();
 
         // Hiển thị thông báo cho nhân viên phục vụ
-        showNotification(
-          message: "Đơn hàng #$orderId, Món: $itemName gặp trục trặc: $reason",
-          color: Colors.red,
-          icon: Icons.warning,
-        );
+        if (orderType == 'dine_in') {
+          showNotification(
+            message:
+                "Đơn hàng #$orderId, Món: $itemName gặp trục trặc: $reason",
+            color: Colors.red,
+            icon: Icons.warning,
+          );
+        }
       } else {
         print("⚠️ Dữ liệu không đúng định dạng: $data");
       }
