@@ -793,6 +793,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
                     if (result == true) {
                       Navigator.pop(context, true);
+                      Navigator.pop(context, true);
                     }
                   },
                   icon: const Icon(Icons.payment, color: Colors.white),
