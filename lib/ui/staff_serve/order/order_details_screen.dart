@@ -211,8 +211,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   void updateOrder(BuildContext context) async {
     bool hasChanges = false;
-    print("Selected items: ${selectedItems.length}");
-    print("Original items: ${orderItems.length}");
+    // Kiểm tra nếu bàn được chọn khác với bàn ban đầu
+    if (selectedTableId != widget.order.tableId) {
+      hasChanges = true; // Đánh dấu có thay đổi
+    }
+
+    // Kiểm tra nếu có thay đổi trong số lượng món hoặc ghi chú
     if (selectedItems.length != orderItems.length) {
       hasChanges = true; // Số lượng món thay đổi
     } else {
@@ -792,8 +796,12 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                     );
 
                     if (result == true) {
-                      Navigator.pop(context, true);
-                      Navigator.pop(context, true);
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context, true); // Đóng modal
+                      }
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context, true); // Đóng màn hình chi tiết
+                      }
                     }
                   },
                   icon: const Icon(Icons.payment, color: Colors.white),
