@@ -1,6 +1,7 @@
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:overlay_support/overlay_support.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SocketService {
   late IO.Socket socket;
@@ -58,7 +59,7 @@ class SocketService {
   }
 
   void connect() {
-    socket = IO.io('http://192.168.217.199:6001', <String, dynamic>{
+    socket = IO.io(dotenv.env['SOCKET_URL'], <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
       'forceNew': true,
@@ -106,12 +107,13 @@ class SocketService {
         String itemName = orderData['item_name'].toString();
         String reason = orderData['reason'];
         String orderType = orderData['order_type'].toString();
+        String table = orderData['table'].toString();
 
         // Hiển thị thông báo cho nhân viên phục vụ
         if (orderType == 'dine_in') {
           showNotification(
             message:
-                "Đơn hàng #$orderId, Món: $itemName gặp trục trặc: $reason",
+                "Đơn hàng #$orderId bàn $table, Món: $itemName gặp trục trặc: $reason",
             color: Colors.red,
             icon: Icons.warning,
           );
